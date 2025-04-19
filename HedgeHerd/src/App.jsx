@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import ChatGpt from './components/Chatbot';
 
 function Home() {
   return <h2>Home Page</h2>;
@@ -32,6 +33,7 @@ function App() {
           <Link to="/" style={bubbleStyle}>Home</Link>
           <Link to="/tab1" style={bubbleStyle}>Tab 1</Link>
           <Link to="/tab2" style={bubbleStyle}>Tab 2</Link>
+          <Link to="/chat">ChatGPT</Link>
         </div>
 
         {/* Right button */}
@@ -45,6 +47,7 @@ function App() {
         <Route path="/tab1" element={<Tab1 />} />
         <Route path="/tab2" element={<Tab2 />} />
         <Route path="/login" element={<LoginSignup />} />
+        <Route path="/chat" element={<ChatGpt />} />
       </Routes>
     </Router>
   );
