@@ -39,21 +39,7 @@ const handleOnMove = e => {
 
   track.animate({
     transform: `translate(${nextPercentage}%, -50%)`
-  }, { duration: 1200, fill: "forwards" });
-
-  for (const image of track.getElementsByClassName("image")) {
-    image.animate({
-      objectPosition: `${100 + nextPercentage}% center`
-    }, { duration: 1200, fill: "forwards" });
-  }
-
-    // Optionally, animate the titles
-  for (const title of track.getElementsByClassName("title")) {
-    title.animate({
-      opacity: 1, /* Fade in titles */
-      transform: `translateX(${nextPercentage}%)` /* Slide titles */
-    }, { duration: 1200, fill: "forwards" });
-  }
+  }, { duration: 1200, fill: "forwards"});
 
 
   // Check if the movement exceeds the threshold to consider it a drag
