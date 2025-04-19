@@ -1,7 +1,8 @@
+/*
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import smallLogo from "./assets/Small.png";
-import accountIcon from "./assets/HedgeHerdOfficial.png";
+import smallLogo from "Small.png";
+import accountIcon from "HedgeHerdOfficial.png";
 
 // For demo purposes only! Never store passwords like this in production.
 const dummyDatabase = {
@@ -80,3 +81,4 @@ const MainPageContent = () => {
 export default MainPageContent;
 
 
+*/
