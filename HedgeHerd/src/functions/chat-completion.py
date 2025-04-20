@@ -16,23 +16,30 @@ CORS(app)
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Temporary PDF content cache
-pdf_text_cache = ""
+pdf_chunks = []
 
 # ========== ROUTE: Chat interaction ==========
 @app.route('/chat', methods=['POST'])
 def chat():
-    global pdf_text_cache
+    global pdf_chunks
     data = request.get_json()
     messages = data.get('messages', [])
 
-    # If PDF has been uploaded, include its text in context
-    if pdf_text_cache:
+    # Insert as much chunked text as token limits allow (~12,000 chars for GPT-4o)
+    if pdf_chunks:
+        # Concatenate up to X characters (to avoid hitting token limit)
+        combined_text = ""
+        for chunk in pdf_chunks:
+            if len(combined_text) + len(chunk) < 12000:
+                combined_text += "\n\n" + chunk
+            else:
+                break
+
         messages.insert(1, {
             "role": "system",
             "content": (
-                "Here is the full text of a PDF document the user uploaded. Use this to answer any questions they ask "
-                "about the content. When possible, refer to the page number included in brackets:\n\n"
-                + pdf_text_cache[:12000]  # Truncate to stay within token limits
+                "Here is content from a PDF the user uploaded. Use this to answer any questions about the content. "
+                "Refer to page numbers when possible:\n\n" + combined_text
             )
         })
 
@@ -47,10 +54,11 @@ def chat():
         print("Chat error:", e)
         return jsonify({'reply': 'There was an error processing your message.'}), 500
 
+
 # ========== ROUTE: PDF Upload and Preview Summary ==========
 @app.route('/upload', methods=['POST'])
 def upload_pdf():
-    global pdf_text_cache
+    global pdf_chunks
 
     if 'pdf' not in request.files:
         return jsonify({'message': 'No file uploaded.'}), 400
@@ -60,41 +68,28 @@ def upload_pdf():
         return jsonify({'message': 'No file selected.'}), 400
 
     try:
-        # Step 1: Save temporary file
+        # Save PDF temporarily
         temp_path = "temp.pdf"
         file.save(temp_path)
 
-        # Step 2: Extract text with page markers
+        # Extract and chunk
+        pdf_chunks = []  # Reset previous
         with fitz.open(temp_path) as doc:
-            text = ""
             for i, page in enumerate(doc):
-                text += f"\n\n[Page {i+1}]\n" + page.get_text()
+                page_text = page.get_text().strip()
+                if page_text:
+                    pdf_chunks.append(f"[Page {i+1}]\n{page_text}")
 
-        pdf_text_cache = text  # Store full text in memory
-
-        if not text.strip():
+        if not pdf_chunks:
             return jsonify({'message': 'PDF has no extractable text.'}), 400
 
-        # Step 3: Generate concise preview
-        preview_prompt = (
-            "Summarize the key highlights from this PDF in **200 to 250 characters**. "
-            "This is just a quick preview for the user:\n\n" + text[:4000]
-        )
-
-        response = client.chat.completions.create(
-            model="gpt-4o",
-            messages=[
-                {"role": "system", "content": "You summarize PDFs into short previews."},
-                {"role": "user", "content": preview_prompt}
-            ]
-        )
-
-        summary = response.choices[0].message.content.strip()
-        return jsonify({'message': summary})
+        return jsonify({'message': 'PDF successfully uploaded and processed.'}), 200
 
     except Exception as e:
         print("PDF processing error:", e)
         return jsonify({'message': 'Error processing PDF.'}), 500
+
+
 
 # ========== Run the server ==========
 if __name__ == '__main__':
