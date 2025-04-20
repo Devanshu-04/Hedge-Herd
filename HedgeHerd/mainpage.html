@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>PDF Analyzer with Chart</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -294,8 +295,15 @@
       <div id="viz-tab" class="tab-content" style="display: none;">
         <div id="visualization-area">
           <canvas id="upload-chart" width="400" height="300"></canvas>
-          <canvas id="pie-chart-2023" width="400" height="300"></canvas>
-          <canvas id="pie-chart-2024" width="400" height="300"></canvas>
+          <div style="margin-top: 20px;">
+            <h3 style="color: black; text-align: center;">Asset Breakdown - 2023</h3>
+            <canvas id="pie-chart-2023" width="400" height="300"></canvas>
+          </div>
+        
+          <div style="margin-top: 20px;">
+            <h3 style="color: black; text-align: center;">Asset Breakdown - 2024</h3>
+            <canvas id="pie-chart-2024" width="400" height="300"></canvas>
+          </div>
         </div>
       </div>
     </div>
