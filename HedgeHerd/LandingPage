@@ -1,0 +1,45 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import logo from "./assets/HedgeHerdOfficial.png"; // Make sure path is correct
+
+const MainLandingPage = () => {
+  const navigate = useNavigate();
+
+  return (
+    <div className="min-h-screen flex flex-col font-comfortaa">
+      {/* Top brown gradient bar with centered logo */}
+      <div className="bg-gradient-to-r from-amber-700 to-yellow-800 py-4 flex justify-center items-center shadow-lg">
+        <img src={logo} alt="HedgeHerd Logo" className="h-16" />
+      </div>
+
+      {/* Main background: white to blue gradient */}
+      <div className="flex-1 bg-gradient-to-b from-white to-blue-100 flex flex-col items-center justify-center text-center px-4">
+        {/* Central slogan text */}
+        <h1 className="text-black text-2xl md:text-3xl font-bold mb-6">
+          Decisions...for every Financial Dilemma.
+        </h1>
+
+        {/* Buttons: Log In and Sign Up */}
+        <div className="space-x-4">
+          {/* Light blue Log In button */}
+          <button
+            onClick={() => navigate("/login")} // placeholder path
+            className="bg-blue-300 hover:bg-blue-400 text-black px-6 py-2 rounded shadow"
+          >
+            Log In
+          </button>
+
+          {/* Navy Sign Up button */}
+          <button
+            onClick={() => navigate("/signup")} // placeholder path
+            className="bg-blue-900 hover:bg-blue-800 text-white px-6 py-2 rounded shadow"
+          >
+            Sign Up
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default MainLandingPage;
