@@ -82,13 +82,13 @@
           errorElem.textContent = "Email already registered.";
         } else {
           dummyDatabase[email] = password;
-          alert("Signed up successfully! Redirecting to dashboard...");
+          //alert("Signed up successfully! Redirecting to dashboard...");
           //Simulate navigation: window.location.href = "/dashboard";
           window.location.href = "mainpage.html";
         }
       } else {
         if (dummyDatabase[email] === password) {
-          alert("Logged in successfully! Redirecting to dashboard...");
+          //alert("Logged in successfully! Redirecting to dashboard...");
           // Simulate navigation: window.location.href = "/dashboard";
           window.location.href = "mainpage.html";
         } else {
