@@ -27,6 +27,17 @@
       height: 7%;
     }
 
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 10px; /* Space between logo and text */
+    }
+
+    .logo {
+      height: 80px; /* Adjust as needed */
+      width: auto;
+    }
+
     .profile-dropdown {
       position: relative;
       display: inline-block;
@@ -79,7 +90,8 @@
       flex-direction: row;
       height: 100%;
       overflow: hidden;
-      gap: 1px; /* space between sections */
+      margin: 10px; /* space between sections */
+      gap: 20px;
     }
 
     .pdf-section {
@@ -232,7 +244,10 @@
 <body>
 
   <div class="header">
-    <h1>HedgeHerd</h1>
+    <div class="logo-container">
+      <img src="/src/assets/Small.png" class="logo">
+      <h1>HedgeHerd</h1>
+    </div>
     <div class="profile-dropdown">
       <button class="profile-btn">👤</button>
       <div class="dropdown-menu">
