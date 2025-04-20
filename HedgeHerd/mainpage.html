@@ -189,6 +189,55 @@
       width: 100%;
     }
 
+    .upload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.upload-left {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+    .tooltip-container {
+      position: relative;
+      display: inline-block;
+    }
+
+  .tooltip-icon {
+    font-size: 22px;
+    background-color: #e8f0ff;
+    color: #007bff;
+    border-radius: 50%;
+    padding: 3px 8px;
+    cursor: pointer;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .tooltip-text {
+    visibility: hidden;
+    background-color: #f9f9f9;
+    color: #333;
+    text-align: left;
+    padding: 10px;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1;
+    top: 35px;
+    right: 0;
+    width: 280px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .tooltip-container:hover .tooltip-text {
+    visibility: visible;
+  }
+
 
 
   </style>
@@ -210,9 +259,28 @@
 
   <div class="content">
     <div class="pdf-section">
-      <h2>Upload PDF</h2>
-      <input type="file" id="file-input" accept="application/pdf" />
-
+      <div class="upload-header">
+        <div class="upload-left">
+          <h2>Upload PDF</h2>
+          <input type="file" id="file-input" accept="application/pdf" />
+        </div>
+        <div class="tooltip-container">
+          <span class="tooltip-icon">?</span>
+          <div class="tooltip-text">
+            <strong>Basic Financial Terms:</strong><br><br>
+            <strong>Budgeting:</strong> Creating a plan for how to spend and save money.<br>
+            <strong>Saving:</strong> Setting aside money for future use.<br>
+            <strong>Interest:</strong> The cost of borrowing or earnings from savings.<br>
+            <strong>Credit:</strong> Borrowed money to be repaid, often with interest.<br>
+            <strong>Debt:</strong> Money owed to someone else.<br>
+            <strong>Investment:</strong> Putting money into assets to grow wealth.<br>
+            <strong>Income:</strong> Money earned from work or other sources.<br>
+            <strong>Expenses:</strong> Money spent on needs and wants.<br>
+            <strong>Emergency Fund:</strong> Savings for unexpected costs.<br>
+            <strong>Net Worth:</strong> Assets minus liabilities.
+          </div>
+        </div>
+      </div>
       <div class="tab-buttons">
         <button class="tab-btn active" onclick="switchTab('pdf')">PDF Viewer</button>
         <button class="tab-btn" onclick="switchTab('viz')">Visualizations</button>
@@ -237,6 +305,8 @@
       <input class="chat-input" id="chat-input" placeholder="Ask about the PDF..." />
     </div>
   </div>
+
+  
 
   <script>
     function switchTab(tab) {
