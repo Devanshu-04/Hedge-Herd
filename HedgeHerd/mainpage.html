@@ -322,6 +322,7 @@
 
           if (response.ok) {
             const data = await response.json();
+            console.log("📄 PDF Chunks from server:", data.chunks);
             const replyDiv = document.createElement("div");
             replyDiv.innerHTML = `<p><strong>AI:</strong></p>` + formatMessage(data.message);
             chatContent.appendChild(replyDiv);

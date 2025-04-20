@@ -30,7 +30,7 @@ def chat():
         # Concatenate up to X characters (to avoid hitting token limit)
         combined_text = ""
         for chunk in pdf_chunks:
-            if len(combined_text) + len(chunk) < 12000:
+            if len(combined_text) + len(chunk) < 100000:
                 combined_text += "\n\n" + chunk
             else:
                 break
@@ -82,7 +82,10 @@ def upload_pdf():
         if not pdf_chunks:
             return jsonify({'message': 'PDF has no extractable text.'}), 400
 
-        return jsonify({'message': 'PDF successfully uploaded and processed.'}), 200
+        return jsonify({
+            'message': 'PDF successfully uploaded and processed.',
+            'chunks': pdf_chunks  # Include chunks in the response
+        }), 200
 
     except Exception as e:
         print("PDF processing error:", e)
