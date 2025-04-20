@@ -5,63 +5,76 @@ from dotenv import load_dotenv
 import os
 import fitz  # PyMuPDF
 
+# Load environment variables
 load_dotenv()
 
+# Flask setup
 app = Flask(__name__)
 CORS(app)
+
+# OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# ========== ROUTE: Chat interaction ==========
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.get_json()
-    messages = data['messages']
+    messages = data.get('messages', [])
 
-    response = client.chat.completions.create(
-        model="gpt-4o",
-        messages=messages
-    )
-    reply = response.choices[0].message.content
-    return jsonify({'reply': reply})
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=messages
+        )
+        reply = response.choices[0].message.content.strip()
+        return jsonify({'reply': reply})
+    except Exception as e:
+        print("Chat error:", e)
+        return jsonify({'reply': 'There was an error processing your message.'}), 500
 
-
+# ========== ROUTE: PDF Upload and Preview Summary ==========
 @app.route('/upload', methods=['POST'])
 def upload_pdf():
     if 'pdf' not in request.files:
-        return jsonify({'message': 'No file part'}), 400
+        return jsonify({'message': 'No file uploaded.'}), 400
 
     file = request.files['pdf']
     if file.filename == '':
-        return jsonify({'message': 'No selected file'}), 400
+        return jsonify({'message': 'No file selected.'}), 400
 
     try:
-        # Save file temporarily
-        filepath = os.path.join("temp.pdf")
-        file.save(filepath)
+        # Step 1: Save temporary file
+        temp_path = "temp.pdf"
+        file.save(temp_path)
 
-        # Extract text from PDF
-        doc = fitz.open(filepath)
-        text = ""
-        for page in doc:
-            text += page.get_text()
-        doc.close()
+        # Step 2: Extract text from PDF
+        with fitz.open(temp_path) as doc:
+            text = "".join(page.get_text() for page in doc)
 
         if not text.strip():
-            return jsonify({'message': 'Could not extract any text from the PDF.'}), 400
+            return jsonify({'message': 'PDF has no extractable text.'}), 400
 
-        # Send to OpenAI
+        # Step 3: Generate concise preview
+        preview_prompt = (
+            "Summarize the key highlights from this PDF in **200 to 250 characters**. "
+            "This is just a quick preview for the user:\n\n" + text[:4000]
+        )
+
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are an assistant that analyzes PDF documents."},
-                {"role": "user", "content": f"Analyze this PDF content:\n\n{text[:4000]}"}
+                {"role": "system", "content": "You summarize PDFs into short previews."},
+                {"role": "user", "content": preview_prompt}
             ]
         )
-        reply = response.choices[0].message.content
-        return jsonify({'message': reply})
+
+        summary = response.choices[0].message.content.strip()
+        return jsonify({'message': summary})
 
     except Exception as e:
         print("PDF processing error:", e)
-        return jsonify({'message': 'Error processing PDF'}), 500
+        return jsonify({'message': 'Error processing PDF.'}), 500
 
+# ========== Run the server ==========
 if __name__ == '__main__':
     app.run(debug=True)
