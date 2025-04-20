@@ -1,9 +1,8 @@
-// HedgeHerd.js
+/*
 import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from "react-router-dom";
-import "./HedgeHerd.css";
-import mainLogo from './assets/HedgeHerdOfficial.png';
-import smallLogo from './assets/Small.png';
+import { useNavigate } from "react-router-dom";
+import smallLogo from "Small.png";
+import accountIcon from "HedgeHerdOfficial.png";
 
 // Dummy database for demonstration
 const dummyDatabase = {
@@ -136,23 +135,7 @@ const HomePage = () => {
   );
 };
 
-// Main App component
-const HedgeHerd = () => {
-  return (
-    <Router>
-      <div className="app-container">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<AuthPage isSignUp={false} />} />
-          <Route path="/signup" element={<AuthPage isSignUp={true} />} />
-          <Route path="/home" element={<HomePage />} />
-        </Routes>
-      </div>
-    </Router>
-  );
-};
-
-export default HedgeHerd;
+export default MainPageContent;
 
 
-
+*/

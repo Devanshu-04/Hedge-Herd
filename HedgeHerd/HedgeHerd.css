@@ -1,102 +1,186 @@
-/* Import Montserrat from Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap');
+/* HedgeHerd.css */
 
-body {
-  font-family: 'Montserrat', Arial, Helvetica, sans-serif;
-  background: #f7fafc;
+/* General styles */
+* {
   margin: 0;
   padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f5f5f5;
   color: #222;
 }
 
-.main-container {
-  max-width: 400px;
-  margin: 48px auto;
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
-  padding: 32px 28px 24px 28px;
+/* Landing page styles */
+.landing-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.gradient-header {
+  background: linear-gradient(to right, #1e40af, #3b82f6);
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.main-logo {
+  height: 80px;
+}
+
+.landing-content {
+  flex: 1;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+.landing-content h1 {
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  color: black;
+  font-weight: 700;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 300px;
+}
+
+.login-button {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  background-color: #93c5fd;
+  color: #1e40af;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.signup-button {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  background-color: #1e3a8a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Auth pages styles */
+.auth-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.light-header {
+  background-color: #93c5fd;
+  padding: 15px 30px;
+  display: flex;
+  align-items: center;
+}
+
+.small-logo {
+  height: 40px;
+}
+
+.auth-content {
+  flex: 1;
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.auth-content h2 {
+  margin-bottom: 25px;
+  font-size: 1.8rem;
+  color: #1e3a8a;
   text-align: center;
 }
 
-.logo {
-  width: 56px;
-  margin-bottom: 12px;
+.form-group {
+  margin-bottom: 20px;
 }
 
-.account-icon {
-  width: 80px;
-  margin-bottom: 16px;
-}
-
-h2 {
-  font-weight: 700;
-  margin-bottom: 24px;
-  font-size: 2rem;
-  letter-spacing: 0.01em;
-}
-
-input[type="email"],
-input[type="password"] {
-  width: 100%;
-  padding: 12px 14px;
-  margin: 8px 0 16px 0;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-family: inherit;
-  background: #f9fafb;
-  transition: border 0.2s;
-}
-
-input[type="email"]:focus,
-input[type="password"]:focus {
-  border: 1.5px solid #7c3aed;
-  outline: none;
-  background: #fff;
-}
-
-button {
-  width: 100%;
-  background: #7c3aed;
-  color: #fff;
-  font-family: inherit;
-  font-weight: 600;
-  font-size: 1.1rem;
-  letter-spacing: 0.01em;
-  border: none;
-  border-radius: 6px;
-  padding: 12px 0;
-  margin-top: 8px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-button:hover {
-  background: #5b21b6;
-}
-
-.switch-auth {
-  margin-top: 18px;
-  font-size: 1rem;
-}
-
-.switch-auth button {
-  background: none;
-  border: none;
-  color: #7c3aed;
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
   font-weight: 500;
-  cursor: pointer;
-  padding: 0;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px;
   font-size: 1rem;
-  text-decoration: underline;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.auth-button {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  background-color: #1e3a8a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .error-message {
-  color: #e53e3e;
-  margin-bottom: 10px;
-  font-size: 0.97rem;
+  color: #ef4444;
+  margin-bottom: 15px;
+  text-align: center;
   font-weight: 500;
 }
+
+/* Home page styles */
+.home-container {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-content {
+  flex: 1;
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.home-content h2 {
+  margin-bottom: 20px;
+  color: #1e3a8a;
+}
+
 
       

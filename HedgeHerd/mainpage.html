@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="slider.css">
+    <title>Hedge Herd Home</title>
+
+  </head>
+  <body>
+    <div class="header">
+      <img src="logo.png" alt="Logo" class="logo">
+    </div>
+    <div class="content">
+      <div class="news-section">
+        <h2>News</h2>
+        <div class="news-list">
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+          <div class="news-item"></div>
+        </div>
+      </div>
+      <div class="sidebar">
+        <h2>Quick links</h2>
+        <div class="sidebar-item">Watchlist</div>
+        <div class="sidebar-item">Strategy Builder</div>
+        <div class="sidebar-item">Community Signals</div>
+        <div class="sidebar-item">News Feed</div>
+      </div>
+    </div>
+
+    <script>
+      window.onload = function() {
+        fetch('http://localhost:5000/news').then(res => res.json()).then(data => {
+            const newsItems = document.querySelectorAll('.news-item');
+            data.forEach((article, i) => {
+              if (i < newsItems.length) {
+                newsItems[i].innerHTML = `<div class="news-content">
+                <h3>${article.headline}</h3>
+                </div>
+                <div class="news-footer"> <a href="${article.url}" target="_blank">Read more</a>
+                <span class="news-source">Source: ${article.source}</span></div>`;
+              }
+            });
+          })
+          .catch(err => console.error("Error fetching news:", err));
+      }
+    </script>
+
+  </body>
+</html>
