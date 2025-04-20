@@ -1,68 +1,171 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="slider.css">
-    <title>Hedge Herd Home</title>
+    <title>PDF Viewer and AI Chat</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        background-color: #f4f4f4;
+      }
 
+      .header {
+        background-color: #add8e6;
+        padding: 20px;
+        text-align: left;
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 10px;
+        padding: 10px;
+        flex-grow: 1;
+      }
+
+      .pdf-section, .chat-section {
+        background-color: #e0e0e0;
+        padding: 10px;
+        border-radius: 8px;
+        box-sizing: border-box;
+        overflow: auto;
+      }
+
+      .pdf-section h2, .chat-section h2 {
+        margin: 0 0 10px;
+      }
+
+      .chat-content {
+        height: calc(100% - 50px);
+        border-radius: 4px;
+        padding: 8px;
+        overflow-y: auto;
+        background-color: #d3d3d3;
+      }
+
+      #pdf-viewer {
+        width: 100%;
+        height: calc(100% - 100px);
+        border: none;
+        display: none;
+      }
+
+      .button {
+        display: inline-block;
+        margin-top: 10px;
+        padding: 10px 15px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #fff;
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        text-align: center;
+      }
+
+      .button:hover {
+        background-color: #0056b3;
+      }
+
+      .chat-input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        margin-top: 10px;
+      }
+    </style>
   </head>
   <body>
     <div class="header">
-      <img src="logo.png" alt="Logo" class="logo">
+      <h1>PDF Viewer and AI Chat</h1>
     </div>
     <div class="content">
-      <div class="news-section">
-        <h2>News</h2>
-        <div class="news-list">
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-        </div>
+      <div class="pdf-section">
+        <h2>Upload and Analyze PDF</h2>
+        <input type="file" id="file-input" accept="application/pdf">
+        <iframe id="pdf-viewer"></iframe>
       </div>
-      <div class="sidebar">
-        <h2>Quick links</h2>
-        <div class="sidebar-item">Watchlist</div>
-        <div class="sidebar-item">Strategy Builder</div>
-        <div class="sidebar-item">Community Signals</div>
-        <div class="sidebar-item">News Feed</div>
+      <div class="chat-section">
+        <h2>Chat Box</h2>
+        <div class="chat-content" id="chat-content">
+          <p>Welcome to the chat!</p>
+        </div>
+        <input class="chat-input" id="chat-input" placeholder="Type your message...">
       </div>
     </div>
 
     <script>
-      window.onload = function() {
-        fetch('http://localhost:5000/news').then(res => res.json()).then(data => {
-            const newsItems = document.querySelectorAll('.news-item');
-            data.forEach((article, i) => {
-              if (i < newsItems.length) {
-                newsItems[i].innerHTML = `<div class="news-content">
-                <h3>${article.headline}</h3>
-                </div>
-                <div class="news-footer"> <a href="${article.url}" target="_blank">Read more</a>
-                <span class="news-source">Source: ${article.source}</span></div>`;
-              }
-            });
-          })
-          .catch(err => console.error("Error fetching news:", err));
-      }
-    </script>
+      const fileInput = document.getElementById("file-input");
+      const pdfViewer = document.getElementById("pdf-viewer");
+      const chatContent = document.getElementById("chat-content");
+      const chatInput = document.getElementById("chat-input");
 
+      // Handle PDF upload
+      fileInput.addEventListener("change", async (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          const fileURL = URL.createObjectURL(file);
+          pdfViewer.src = fileURL;
+          pdfViewer.style.display = "block";
+
+          const formData = new FormData();
+          formData.append("pdf", file);
+
+          try {
+            const response = await fetch("http://localhost:5000/upload", {
+              method: "POST",
+              body: formData,
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              chatContent.innerHTML += `<p><strong>AI:</strong> ${data.message}</p>`;
+            } else {
+              const error = await response.json();
+              chatContent.innerHTML += `<p><strong>Error:</strong> ${error.message || "Failed to process PDF."}</p>`;
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            chatContent.innerHTML += `<p><strong>Error:</strong> An error occurred while uploading the PDF.</p>`;
+          }
+        }
+      });
+
+      // Handle chat input
+      chatInput.addEventListener("keypress", async (event) => {
+        if (event.key === "Enter" && chatInput.value.trim() !== "") {
+          const userMessage = chatInput.value.trim();
+          chatContent.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
+          chatInput.value = "";
+
+          try {
+            const response = await fetch("http://localhost:5000/chat", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ message: userMessage }),
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              chatContent.innerHTML += `<p><strong>AI:</strong> ${data.reply}</p>`;
+            } else {
+              const error = await response.json();
+              chatContent.innerHTML += `<p><strong>Error:</strong> ${error.reply || "Error processing your message."}</p>`;
+            }
+          } catch (error) {
+            console.error("Error:", error);
+            chatContent.innerHTML += `<p><strong>Error:</strong> Unable to connect to the AI server.</p>`;
+          }
+        }
+      });
+    </script>
   </body>
 </html>
