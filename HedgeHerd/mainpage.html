@@ -1,218 +1,250 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-    <title>PDF Viewer and AI Chat</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        display: flex;
-        flex-direction: column;
-        height: 100vh;
-        background-color: #f4f4f4;
-      }
-
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 10px 0;
-        background-color: #fff;
-      }
-      th, td {
-        border: 1px solid #ccc;
-        padding: 8px;
-        text-align: left;
-      }
-      th {
-        background-color: #007bff;
-        color: white;
-      }
-
-      .header {
-        background-color: #add8e6;
-        padding: 20px;
-        text-align: left;
-      }
-
-      .content {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 10px;
-        padding: 10px;
-        flex-grow: 1;
-        height: 100%; /* Ensure the chat container is full height within the content section */
-      }
-
-      .pdf-section, .chat-section {
-        background-color: #e0e0e0;
-        padding: 10px;
-        border-radius: 8px;
-        box-sizing: fit-content;
-        overflow: auto;
-      }
-
-      .chat-content {
-        height: 75%; /* Fixed height for the chat box */
-        overflow-y: auto; /* Enables vertical scrolling when content exceeds */
-        border-radius: 4px;
-        padding: 8px;
-        background-color: #d3d3d3;
-        display: flex;
-        flex-direction: column;
-      }
-
-
-      #pdf-viewer {
-        width: 100%;
-        height: calc(100% - 100px);
-        border: none;
-        display: none;
-      }
-
-      .button {
-        display: inline-block;
-        margin-top: 10px;
-        padding: 10px 15px;
-        font-size: 16px;
-        font-weight: bold;
-        color: #fff;
-        background-color: #007bff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        text-align: center;
-      }
-
-      .button:hover {
-        background-color: #0056b3;
-      }
-
-      .chat-input {
-        width: 100%;
-        padding: 10px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        margin-top: 0px;
-        box-sizing: border-box; /* Ensures padding doesn't extend the width */
-      }
-    </style>
-  </head>
-  <body>
-    <div class="header">
-      <h1>PDF Viewer and AI Chat</h1>
-    </div>
-    <div class="content">
-      <div class="pdf-section">
-        <h2>Upload and Analyze PDF</h2>
-        <input type="file" id="file-input" accept="application/pdf" />
-        <iframe id="pdf-viewer"></iframe>
-      </div>
-      <div class="chat-section">
-        <h2>Chat Box</h2>
-        <div class="chat-content" id="chat-content">
-          <p>Welcome to the chat!</p>
-        </div>
-        <input class="chat-input" id="chat-input" placeholder="Type your message..." />
-      </div>
-    </div>
-
-    <script>
-
-      function formatMessage(msg) {
-        return msg
-          .replace(/### (.*)/g, '<h3>$1</h3>')
-          .replace(/- \*\*(.*?)\*\*:/g, '<li><strong>$1:</strong>') // for list items
-          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // bold
-          .replace(/- (.*)/g, '<li>$1</li>') // bullet points
-          .replace(/\n/g, '<br>'); // line breaks
-      }
-      const fileInput = document.getElementById("file-input");
-      const pdfViewer = document.getElementById("pdf-viewer");
-      const chatContent = document.getElementById("chat-content");
-      const chatInput = document.getElementById("chat-input");
-
-      const chatHistory = [
-        { role: "system", content: "You are a helpful chatbot." }
-      ];
-
-      // Handle PDF upload
-      fileInput.addEventListener("change", async (event) => {
-        const file = event.target.files[0];
-        if (file) {
-          const fileURL = URL.createObjectURL(file);
-          pdfViewer.src = fileURL;
-          pdfViewer.style.display = "block";
-
-          const formData = new FormData();
-          formData.append("pdf", file);
-
-          try {
-            const response = await fetch("http://localhost:5000/upload", {
-              method: "POST",
-              body: formData,
-            });
-
-            if (response.ok) {
-              const data = await response.json();
-              const replyDiv = document.createElement("div");
-              replyDiv.innerHTML = `<p><strong>AI:</strong></p>` + formatMessage(data.message);
-              chatContent.appendChild(replyDiv);
-
-              chatHistory.push({ role: "user", content: "Analyze this PDF." });
-              chatHistory.push({ role: "assistant", content: data.message });
-            } else {
-              const error = await response.json();
-              chatContent.innerHTML += `<p><strong>Error:</strong> ${error.message || "Failed to process PDF."}</p>`;
-            }
-          } catch (error) {
-            console.error("Error:", error);
-            chatContent.innerHTML += `<p><strong>Error:</strong> An error occurred while uploading the PDF.</p>`;
-          }
-        }
-      });
-
-      // Handle chat input
-      chatInput.addEventListener("keypress", async (event) => {
-  if (event.key === "Enter" && chatInput.value.trim() !== "") {
-    const userMessage = chatInput.value.trim();
-    chatContent.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
-    chatInput.value = "";
-
-    chatHistory.push({ role: "user", content: userMessage });
-
-    try {
-      const response = await fetch("http://localhost:5000/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: chatHistory }),
-      });
-
-      let botReply = "";
-
-      if (response.ok) {
-        const data = await response.json();
-        botReply = data.reply;
-        chatHistory.push({ role: "assistant", content: botReply });
-
-        const replyDiv = document.createElement("div");
-        replyDiv.innerHTML = `<p><strong>AI:</strong></p>` + formatMessage(botReply);
-        chatContent.appendChild(replyDiv);
-      } else {
-        const error = await response.json();
-        chatContent.innerHTML += `<p><strong>Error:</strong> ${error.reply || "Error processing your message."}</p>`;
-      }
-    } catch (error) {
-      console.error("Error:", error);
-      chatContent.innerHTML += `<p><strong>Error:</strong> Unable to connect to the AI server.</p>`;
-    }
-  }
-});
+<head>
   
-    </script>
-  </body>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <title>PDF Viewer and AI Chat</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background-color: #486e97;
+    }
+
+    .header {
+      background-color: #5895f8;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      
+    }
+
+    .profile-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .profile-btn {
+      background-color: white;
+      color: #000000;
+      border: none;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 20px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.2s;
+    }
+
+    .profile-btn:hover {
+      background-color: #e0e0e0;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      margin-top: 5px;
+      min-width: 150px;
+      z-index: 1000;
+    }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 10px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .dropdown-menu a:hover {
+      background-color: #f2f2f2;
+    }
+
+    .profile-dropdown:hover .dropdown-menu {
+      display: block;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 10px;
+      padding: 10px;
+      flex-grow: 1;
+      height: 100%;
+    }
+
+    .pdf-section, .chat-section {
+      background-color: #84a3c5;
+      padding: 10px;
+      border-radius: 8px;
+      overflow: auto;
+    }
+
+    .chat-content {
+      height: 75%;
+      overflow-y: auto;
+      border-radius: 4px;
+      padding: 8px;
+      background-color: #84a3c5;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #pdf-viewer {
+      width: 100%;
+      height: calc(100% - 100px);
+      border: none;
+      display: none;
+    }
+
+    .chat-input {
+      width: 100%;
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #3b82f6;
+      margin-top: 0px;
+      box-sizing: border-box;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Hedge Herd PDF Analyzer</h1>
+    <div class="profile-dropdown">
+      <button class="profile-btn">👤</button>
+      <div class="dropdown-menu">
+        <a href="#" onclick="logout()">Logout</a>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="pdf-section">
+      <h2>Upload PDF below</h2>
+      <input type="file" id="file-input" accept="application/pdf" />
+      <iframe id="pdf-viewer"></iframe>
+    </div>
+    <div class="chat-section">
+      <h2>Chat Box</h2>
+      <div class="chat-content" id="chat-content">
+        <p>Welcome to the chat!</p>
+      </div>
+      <input class="chat-input" id="chat-input" placeholder="Type your message..." />
+    </div>
+  </div>
+
+  <script>
+    function logout() {
+      window.location.href = "auth.html"; // change if your login page is named differently
+    }
+
+    function formatMessage(msg) {
+      return msg
+        .replace(/### (.*)/g, '<h3>$1</h3>')
+        .replace(/- \*\*(.*?)\*\*:/g, '<li><strong>$1:</strong>')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/- (.*)/g, '<li>$1</li>')
+        .replace(/\n/g, '<br>');
+    }
+
+    const fileInput = document.getElementById("file-input");
+    const pdfViewer = document.getElementById("pdf-viewer");
+    const chatContent = document.getElementById("chat-content");
+    const chatInput = document.getElementById("chat-input");
+
+    const chatHistory = [
+      { role: "system", content: "You are a helpful chatbot." }
+    ];
+
+    fileInput.addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const fileURL = URL.createObjectURL(file);
+        pdfViewer.src = fileURL;
+        pdfViewer.style.display = "block";
+
+        const formData = new FormData();
+        formData.append("pdf", file);
+
+        try {
+          const response = await fetch("http://localhost:5000/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const replyDiv = document.createElement("div");
+            replyDiv.innerHTML = `<p><strong>AI:</strong></p>` + formatMessage(data.message);
+            chatContent.appendChild(replyDiv);
+
+            chatHistory.push({ role: "user", content: "Analyze this PDF." });
+            chatHistory.push({ role: "assistant", content: data.message });
+          } else {
+            const error = await response.json();
+            chatContent.innerHTML += `<p><strong>Error:</strong> ${error.message || "Failed to process PDF."}</p>`;
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          chatContent.innerHTML += `<p><strong>Error:</strong> An error occurred while uploading the PDF.</p>`;
+        }
+      }
+    });
+
+    chatInput.addEventListener("keypress", async (event) => {
+      if (event.key === "Enter" && chatInput.value.trim() !== "") {
+        const userMessage = chatInput.value.trim();
+        chatContent.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
+        chatInput.value = "";
+
+        chatHistory.push({ role: "user", content: userMessage });
+
+        try {
+          const response = await fetch("http://localhost:5000/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ messages: chatHistory }),
+          });
+
+          let botReply = "";
+
+          if (response.ok) {
+            const data = await response.json();
+            botReply = data.reply;
+            chatHistory.push({ role: "assistant", content: botReply });
+
+            const replyDiv = document.createElement("div");
+            replyDiv.innerHTML = `<p><strong>AI:</strong></p>` + formatMessage(botReply);
+            chatContent.appendChild(replyDiv);
+          } else {
+            const error = await response.json();
+            chatContent.innerHTML += `<p><strong>Error:</strong> ${error.reply || "Error processing your message."}</p>`;
+          }
+        } catch (error) {
+          console.error("Error:", error);
+          chatContent.innerHTML += `<p><strong>Error:</strong> Unable to connect to the AI server.</p>`;
+        }
+      }
+    });
+  </script>
+</body>
 </html>
