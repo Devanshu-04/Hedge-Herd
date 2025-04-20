@@ -33,15 +33,25 @@
       display: inline-block;
     }
 
+    .dropdown button {
+      background: none;
+      border: none;
+      width: 100%;
+      padding: 10px 15px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
     .profile-btn {
       background-color: white;
-      color: #000000;
+      color: #333;
       border: none;
-      width: 70px;
-      height: 70px;
+      width: 69px;
+      height: 69px;
       border-radius: 50%;
       cursor: pointer;
-      font-size: 20px;
+      font-size: 28px;
       font-weight: bold;
       display: flex;
       align-items: center;
@@ -57,13 +67,14 @@
     .dropdown-menu {
       display: none;
       position: absolute;
+      top: 70px;
       right: 0;
       background-color: white;
       border: 1px solid #ccc;
-      border-radius: 5px;
-      margin-top: 5px;
+      z-index: 999;
       min-width: 150px;
-      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      border-radius: 6px;
     }
 
     .dropdown-menu a {
@@ -80,6 +91,19 @@
 
     .profile-dropdown:hover .dropdown-menu {
       display: block;
+    }
+
+    .profile-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .profile-container:hover .dropdown {
+      display: block;
+    }
+
+    .dropdown button:hover {
+      background-color: #f0f0f0;
     }
 
     .content {
@@ -134,7 +158,7 @@
         <a href="#" onclick="logout()">Logout</a>
       </div>
     </div>
-    </div>
+  </div>
   </div>
 
   <div class="content">
@@ -153,6 +177,14 @@
   </div>
 
   <script>
+    const profileBtn = document.querySelector('.profile-btn');
+    const profileDropdown = document.querySelector('.profile-dropdown');
+
+    profileBtn.addEventListener('click', function() {
+      profileDropdown.classList.toggle('show'); // Toggle the 'show' class on the profile dropdown
+    });
+
+    // Logout function
     function logout() {
       window.location.href = "auth.html"; // change if your login page is named differently
     }
