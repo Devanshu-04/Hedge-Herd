@@ -1,250 +1,232 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <title>PDF Viewer and AI Chat</title>
-
+  <title>PDF Analyzer with Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
+      background-color: #486e97;
+      color: white;
       margin: 0;
       padding: 0;
       display: flex;
       flex-direction: column;
       height: 100vh;
-      background-color: #486e97;
     }
-
-    .header {
-      background-color: #5895f8;
-      padding: 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: white;
-      
-    }
-
-    .profile-dropdown {
-      position: relative;
-      display: inline-block;
-    }
-
-    .profile-btn {
-      background-color: white;
-      color: #000000;
-      border: none;
-      width: 70px;
-      height: 70px;
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 20px;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-      transition: background-color 0.2s;
-    }
-
-    .profile-btn:hover {
-      background-color: #e0e0e0;
-    }
-
-    .dropdown-menu {
-      display: none;
-      position: absolute;
-      right: 0;
-      background-color: white;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-      margin-top: 5px;
-      min-width: 150px;
-      z-index: 1000;
-    }
-
-    .dropdown-menu a {
-      display: block;
-      padding: 10px;
-      text-decoration: none;
-      color: #333;
-      font-weight: 500;
-    }
-
-    .dropdown-menu a:hover {
-      background-color: #f2f2f2;
-    }
-
-    .profile-dropdown:hover .dropdown-menu {
-      display: block;
-    }
-
     .content {
       display: grid;
       grid-template-columns: 2fr 1fr;
       gap: 10px;
       padding: 10px;
       flex-grow: 1;
-      height: 100%;
     }
-
     .pdf-section, .chat-section {
       background-color: #84a3c5;
       padding: 10px;
       border-radius: 8px;
-      overflow: auto;
     }
-
     .chat-content {
-      height: 75%;
+      height: 50%;
       overflow-y: auto;
-      border-radius: 4px;
+      background: #84a3c5;
       padding: 8px;
-      background-color: #84a3c5;
-      display: flex;
-      flex-direction: column;
+      border-radius: 5px;
     }
-
-    #pdf-viewer {
+    iframe {
       width: 100%;
-      height: calc(100% - 100px);
+      height: 400px;
       border: none;
-      display: none;
     }
-
+    canvas {
+      margin-top: 10px;
+      background: white;
+      border-radius: 8px;
+    }
     .chat-input {
       width: 100%;
       padding: 10px;
+      margin-top: 10px;
       border-radius: 5px;
-      border: 1px solid #3b82f6;
-      margin-top: 0px;
+      border: none;
       box-sizing: border-box;
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>Hedge Herd PDF Analyzer</h1>
-    <div class="profile-dropdown">
-      <button class="profile-btn">👤</button>
-      <div class="dropdown-menu">
-        <a href="#" onclick="logout()">Logout</a>
-      </div>
-    </div>
-    </div>
-  </div>
-
   <div class="content">
     <div class="pdf-section">
-      <h2>Upload PDF below</h2>
+      <h2>Upload PDF</h2>
       <input type="file" id="file-input" accept="application/pdf" />
       <iframe id="pdf-viewer"></iframe>
+      <canvas id="upload-chart" width="400" height="300"></canvas>
+      <canvas id="pie-chart-2023" width="400" height="300"></canvas>
+      <canvas id="pie-chart-2024" width="400" height="300"></canvas>
     </div>
     <div class="chat-section">
       <h2>Chat Box</h2>
-      <div class="chat-content" id="chat-content">
-        <p>Welcome to the chat!</p>
-      </div>
-      <input class="chat-input" id="chat-input" placeholder="Type your message..." />
+      <div class="chat-content" id="chat-content"><p>Welcome!</p></div>
+      <input class="chat-input" id="chat-input" placeholder="Ask about the PDF..." />
     </div>
   </div>
 
   <script>
-    function logout() {
-      window.location.href = "auth.html"; // change if your login page is named differently
-    }
-
-    function formatMessage(msg) {
-      return msg
-        .replace(/### (.*)/g, '<h3>$1</h3>')
-        .replace(/- \*\*(.*?)\*\*:/g, '<li><strong>$1:</strong>')
-        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-        .replace(/- (.*)/g, '<li>$1</li>')
-        .replace(/\n/g, '<br>');
-    }
-
     const fileInput = document.getElementById("file-input");
     const pdfViewer = document.getElementById("pdf-viewer");
-    const chatContent = document.getElementById("chat-content");
     const chatInput = document.getElementById("chat-input");
+    const chatContent = document.getElementById("chat-content");
 
-    const chatHistory = [
-      { role: "system", content: "You are a helpful chatbot." }
-    ];
+    let uploadChartInstance;
+    const chatHistory = [{ role: "system", content: "You are a helpful assistant." }];
 
-    fileInput.addEventListener("change", async (event) => {
-      const file = event.target.files[0];
+    fileInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
       if (file) {
         const fileURL = URL.createObjectURL(file);
         pdfViewer.src = fileURL;
-        pdfViewer.style.display = "block";
 
         const formData = new FormData();
         formData.append("pdf", file);
 
-        try {
-          const response = await fetch("http://localhost:5000/upload", {
-            method: "POST",
-            body: formData,
-          });
+        const res = await fetch("http://localhost:5000/upload", {
+          method: "POST",
+          body: formData
+        });
 
-          if (response.ok) {
-            const data = await response.json();
-            const replyDiv = document.createElement("div");
-            replyDiv.innerHTML = `<p><strong>AI:</strong></p>` + formatMessage(data.message);
-            chatContent.appendChild(replyDiv);
+        const data = await res.json();
+        chatContent.innerHTML += `<p><strong>AI:</strong> ${data.message}</p>`;
 
-            chatHistory.push({ role: "user", content: "Analyze this PDF." });
-            chatHistory.push({ role: "assistant", content: data.message });
-          } else {
-            const error = await response.json();
-            chatContent.innerHTML += `<p><strong>Error:</strong> ${error.message || "Failed to process PDF."}</p>`;
-          }
-        } catch (error) {
-          console.error("Error:", error);
-          chatContent.innerHTML += `<p><strong>Error:</strong> An error occurred while uploading the PDF.</p>`;
-        }
+        // Auto query assets
+        const autoMessage = { role: "user", content: "List total assets and breakdown for both 2023 and 2024." };
+        chatHistory.push(autoMessage);
+
+        const chatRes = await fetch("http://localhost:5000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: chatHistory })
+        });
+
+        const chatData = await chatRes.json();
+        const botReply = chatData.reply;
+        chatHistory.push({ role: "assistant", content: botReply });
+
+        chatContent.innerHTML += `<p><strong>AI:</strong><br>${botReply.replace(/\n/g, "<br>")}</p>`;
+        renderUploadChart(botReply);
+        renderPieCharts(botReply); // <-- Render pie charts
       }
     });
 
-    chatInput.addEventListener("keypress", async (event) => {
-      if (event.key === "Enter" && chatInput.value.trim() !== "") {
-        const userMessage = chatInput.value.trim();
-        chatContent.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
+    chatInput.addEventListener("keypress", async (e) => {
+      if (e.key === "Enter" && chatInput.value.trim() !== "") {
+        const message = chatInput.value.trim();
+        chatContent.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
         chatInput.value = "";
 
-        chatHistory.push({ role: "user", content: userMessage });
+        chatHistory.push({ role: "user", content: message });
 
-        try {
-          const response = await fetch("http://localhost:5000/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ messages: chatHistory }),
-          });
+        const res = await fetch("http://localhost:5000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: chatHistory })
+        });
 
-          let botReply = "";
+        const data = await res.json();
+        const botReply = data.reply;
+        chatHistory.push({ role: "assistant", content: botReply });
 
-          if (response.ok) {
-            const data = await response.json();
-            botReply = data.reply;
-            chatHistory.push({ role: "assistant", content: botReply });
-
-            const replyDiv = document.createElement("div");
-            replyDiv.innerHTML = `<p><strong>AI:</strong></p>` + formatMessage(botReply);
-            chatContent.appendChild(replyDiv);
-          } else {
-            const error = await response.json();
-            chatContent.innerHTML += `<p><strong>Error:</strong> ${error.reply || "Error processing your message."}</p>`;
-          }
-        } catch (error) {
-          console.error("Error:", error);
-          chatContent.innerHTML += `<p><strong>Error:</strong> Unable to connect to the AI server.</p>`;
-        }
+        chatContent.innerHTML += `<p><strong>AI:</strong><br>${botReply.replace(/\n/g, "<br>")}</p>`;
       }
     });
+
+    function renderUploadChart(replyText) {
+      const canvas = document.getElementById("upload-chart");
+      const ctx = canvas.getContext("2d");
+
+      const match2024 = replyText.match(/2024.*?₹([\d,]+)/);
+      const match2023 = replyText.match(/2023.*?₹([\d,]+)/);
+
+      if (!match2024 || !match2023) return;
+
+      const val2024 = parseInt(match2024[1].replace(/,/g, ''));
+      const val2023 = parseInt(match2023[1].replace(/,/g, ''));
+
+      if (uploadChartInstance) uploadChartInstance.destroy();
+
+      uploadChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Total Assets'],
+          datasets: [
+            {
+              label: '2024 (₹ million)',
+              data: [val2024],
+              backgroundColor: 'rgba(54, 162, 235, 0.6)'
+            },
+            {
+              label: '2023 (₹ million)',
+              data: [val2023],
+              backgroundColor: 'rgba(255, 159, 64, 0.6)'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function renderPieCharts(replyText) {
+      const pie2023 = document.getElementById("pie-chart-2023").getContext("2d");
+      const pie2024 = document.getElementById("pie-chart-2024").getContext("2d");
+
+      const parseAssets = (year) => {
+        const sectionRegex = new RegExp(`Assets for ${year}:([\\s\\S]*?)(?=\\n\\n|Assets for|$)`);
+        const match = replyText.match(sectionRegex);
+        if (!match) return [];
+
+        const lines = match[1].split("\n").filter(line => line.includes("₹"));
+        return lines.map(line => {
+          const [label, val] = line.split(":");
+          return {
+            label: label.trim(),
+            value: parseInt(val.replace(/[₹,]/g, ''))
+          };
+        });
+      };
+
+      const data2023 = parseAssets("2023");
+      const data2024 = parseAssets("2024");
+
+      new Chart(pie2023, {
+        type: "pie",
+        data: {
+          labels: data2023.map(d => d.label),
+          datasets: [{
+            data: data2023.map(d => d.value),
+            backgroundColor: ['#FF6384', '#FFCE56', '#36A2EB', '#9CCC65', '#FF9F40']
+          }]
+        }
+      });
+
+      new Chart(pie2024, {
+        type: "pie",
+        data: {
+          labels: data2024.map(d => d.label),
+          datasets: [{
+            data: data2024.map(d => d.value),
+            backgroundColor: ['#42A5F5', '#66BB6A', '#FFA726', '#AB47BC', '#26C6DA']
+          }]
+        }
+      });
+    }
   </script>
 </body>
 </html>
