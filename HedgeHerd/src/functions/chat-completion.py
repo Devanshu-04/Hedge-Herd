@@ -51,7 +51,7 @@ def chat():
     if pdf_chunks:
         combined_text = ""
         for chunk in pdf_chunks:
-            if len(combined_text) + len(chunk) < 12000:
+            if len(combined_text) + len(chunk) < 100000:
                 combined_text += "\n\n" + chunk
             else:
                 break
@@ -86,5 +86,46 @@ def chat():
         print("Chat error:", e)
         return jsonify({'reply': 'There was an error processing your message.'}), 500
 
+
+# ========== ROUTE: PDF Upload and Preview Summary ==========
+@app.route('/upload', methods=['POST'])
+def upload_pdf():
+    global pdf_chunks
+
+    if 'pdf' not in request.files:
+        return jsonify({'message': 'No file uploaded.'}), 400
+
+    file = request.files['pdf']
+    if file.filename == '':
+        return jsonify({'message': 'No file selected.'}), 400
+
+    try:
+        # Save PDF temporarily
+        temp_path = "temp.pdf"
+        file.save(temp_path)
+
+        # Extract and chunk
+        pdf_chunks = []  # Reset previous
+        with fitz.open(temp_path) as doc:
+            for i, page in enumerate(doc):
+                page_text = page.get_text().strip()
+                if page_text:
+                    pdf_chunks.append(f"[Page {i+1}]\n{page_text}")
+
+        if not pdf_chunks:
+            return jsonify({'message': 'PDF has no extractable text.'}), 400
+
+        return jsonify({
+            'message': 'PDF successfully uploaded and processed.',
+            'chunks': pdf_chunks  # Include chunks in the response
+        }), 200
+
+    except Exception as e:
+        print("PDF processing error:", e)
+        return jsonify({'message': 'Error processing PDF.'}), 500
+
+
+
+# ========== Run the server ==========
 if __name__ == '__main__':
     app.run(debug=True)
