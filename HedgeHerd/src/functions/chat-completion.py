@@ -16,17 +16,17 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 def upload_pdf():
     if 'pdf' not in request.files:
         return jsonify({'message': 'No PDF file uploaded'}), 400
-    
+
     pdf_file = request.files['pdf']
     try:
         reader = PyPDF2.PdfReader(pdf_file)
-        text = "".join(page.extract_text() for page in reader.pages)
+        text = "".join(page.extract_text() or "" for page in reader.pages)
     except Exception as e:
         return jsonify({'message': 'Error reading PDF file', 'error': str(e)}), 500
 
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-4",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are analyzing uploaded PDF files."},
                 {"role": "user", "content": text}
@@ -40,15 +40,12 @@ def upload_pdf():
 @app.route('/chat', methods=['POST'])
 def chat():
     data = request.get_json()
-    user_message = data.get('message')
+    messages = data.get('messages', [])
 
     try:
         response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are a helpful chatbot."},
-                {"role": "user", "content": user_message}
-            ]
+            model="gpt-4o",
+            messages=messages
         )
         reply = response.choices[0].message["content"]
         return jsonify({'reply': reply})

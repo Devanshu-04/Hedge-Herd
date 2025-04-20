@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>PDF Viewer and AI Chat</title>
     <style>
       body {
@@ -35,10 +35,6 @@
         border-radius: 8px;
         box-sizing: border-box;
         overflow: auto;
-      }
-
-      .pdf-section h2, .chat-section h2 {
-        margin: 0 0 10px;
       }
 
       .chat-content {
@@ -90,7 +86,7 @@
     <div class="content">
       <div class="pdf-section">
         <h2>Upload and Analyze PDF</h2>
-        <input type="file" id="file-input" accept="application/pdf">
+        <input type="file" id="file-input" accept="application/pdf" />
         <iframe id="pdf-viewer"></iframe>
       </div>
       <div class="chat-section">
@@ -98,7 +94,7 @@
         <div class="chat-content" id="chat-content">
           <p>Welcome to the chat!</p>
         </div>
-        <input class="chat-input" id="chat-input" placeholder="Type your message...">
+        <input class="chat-input" id="chat-input" placeholder="Type your message..." />
       </div>
     </div>
 
@@ -107,6 +103,10 @@
       const pdfViewer = document.getElementById("pdf-viewer");
       const chatContent = document.getElementById("chat-content");
       const chatInput = document.getElementById("chat-input");
+
+      const chatHistory = [
+        { role: "system", content: "You are a helpful chatbot." }
+      ];
 
       // Handle PDF upload
       fileInput.addEventListener("change", async (event) => {
@@ -127,7 +127,9 @@
 
             if (response.ok) {
               const data = await response.json();
-              chatContent.innerHTML += `<p><strong>AI:</strong> ${data.message}</p>`;
+              chatContent.innerHTML += `<p><strong>AI (PDF):</strong> ${data.message}</p>`;
+              chatHistory.push({ role: "user", content: "Analyze this PDF." });
+              chatHistory.push({ role: "assistant", content: data.message });
             } else {
               const error = await response.json();
               chatContent.innerHTML += `<p><strong>Error:</strong> ${error.message || "Failed to process PDF."}</p>`;
@@ -146,16 +148,20 @@
           chatContent.innerHTML += `<p><strong>You:</strong> ${userMessage}</p>`;
           chatInput.value = "";
 
+          chatHistory.push({ role: "user", content: userMessage });
+
           try {
             const response = await fetch("http://localhost:5000/chat", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ message: userMessage }),
+              body: JSON.stringify({ messages: chatHistory }),
             });
 
             if (response.ok) {
               const data = await response.json();
-              chatContent.innerHTML += `<p><strong>AI:</strong> ${data.reply}</p>`;
+              const botReply = data.reply;
+              chatContent.innerHTML += `<p><strong>AI:</strong> ${botReply}</p>`;
+              chatHistory.push({ role: "assistant", content: botReply });
             } else {
               const error = await response.json();
               chatContent.innerHTML += `<p><strong>Error:</strong> ${error.reply || "Error processing your message."}</p>`;
