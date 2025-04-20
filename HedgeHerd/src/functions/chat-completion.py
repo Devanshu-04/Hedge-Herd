@@ -39,10 +39,9 @@ def chat():
             "role": "system",
             "content": (
                 "Here is content from a PDF the user uploaded. Use this to answer any questions about the content. "
-                "Refer to page numbers when possible:\n\n" + combined_text
-            )
-        })
-
+                "Refer to page numbers when possible. If the information contains tables or structured data like a balance sheet, "
+                "format it as an HTML table:\n\n" + combined_text)
+})
     try:
         response = client.chat.completions.create(
             model="gpt-4o",
