@@ -53,9 +53,14 @@ body {
 
 .news-item {
   background-color: #d3d3d3;
-  height: 100px;
+  height: 70px;
   flex-shrink: 0;
   border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 8px;
+  box-sizing: border-box;
 }
 
 /* Sidebar */
@@ -93,3 +98,22 @@ body {
   background-color: rgba(0, 0, 0, 0.2);
   border-radius: 4px;
 }
+
+.news-content h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.news-footer {
+  font-size: 14px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 10px;
+}
+
+.news-source {
+  font-size: 12px;
+  color: gray;
+}
+

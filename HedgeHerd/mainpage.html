@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="slider.css">
     <title>Hedge Herd Home</title>
+
   </head>
   <body>
     <div class="header">
@@ -51,11 +52,11 @@
             const newsItems = document.querySelectorAll('.news-item');
             data.forEach((article, i) => {
               if (i < newsItems.length) {
-                newsItems[i].innerHTML = `
-                  <h3>${article.headline}</h3>
-                  <p><a href="${article.url}" target="_blank">Read more</a></p>
-                  <p style="font-size: small; color: gray;">Source: ${article.source}</p>
-                `;
+                newsItems[i].innerHTML = `<div class="news-content">
+                <h3>${article.headline}</h3>
+                </div>
+                <div class="news-footer"> <a href="${article.url}" target="_blank">Read more</a>
+                <span class="news-source">Source: ${article.source}</span></div>`;
               }
             });
           })
