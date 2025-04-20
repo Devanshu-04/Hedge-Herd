@@ -15,11 +15,26 @@ CORS(app)
 # OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# Temporary PDF content cache
+pdf_text_cache = ""
+
 # ========== ROUTE: Chat interaction ==========
 @app.route('/chat', methods=['POST'])
 def chat():
+    global pdf_text_cache
     data = request.get_json()
     messages = data.get('messages', [])
+
+    # If PDF has been uploaded, include its text in context
+    if pdf_text_cache:
+        messages.insert(1, {
+            "role": "system",
+            "content": (
+                "Here is the full text of a PDF document the user uploaded. Use this to answer any questions they ask "
+                "about the content. When possible, refer to the page number included in brackets:\n\n"
+                + pdf_text_cache[:12000]  # Truncate to stay within token limits
+            )
+        })
 
     try:
         response = client.chat.completions.create(
@@ -35,6 +50,8 @@ def chat():
 # ========== ROUTE: PDF Upload and Preview Summary ==========
 @app.route('/upload', methods=['POST'])
 def upload_pdf():
+    global pdf_text_cache
+
     if 'pdf' not in request.files:
         return jsonify({'message': 'No file uploaded.'}), 400
 
@@ -47,9 +64,13 @@ def upload_pdf():
         temp_path = "temp.pdf"
         file.save(temp_path)
 
-        # Step 2: Extract text from PDF
+        # Step 2: Extract text with page markers
         with fitz.open(temp_path) as doc:
-            text = "".join(page.get_text() for page in doc)
+            text = ""
+            for i, page in enumerate(doc):
+                text += f"\n\n[Page {i+1}]\n" + page.get_text()
+
+        pdf_text_cache = text  # Store full text in memory
 
         if not text.strip():
             return jsonify({'message': 'PDF has no extractable text.'}), 400
