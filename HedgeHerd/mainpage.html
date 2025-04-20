@@ -44,5 +44,24 @@
         <div class="sidebar-item">News Feed</div>
       </div>
     </div>
+
+    <script>
+      window.onload = function() {
+        fetch('http://localhost:5000/news').then(res => res.json()).then(data => {
+            const newsItems = document.querySelectorAll('.news-item');
+            data.forEach((article, i) => {
+              if (i < newsItems.length) {
+                newsItems[i].innerHTML = `
+                  <h3>${article.headline}</h3>
+                  <p><a href="${article.url}" target="_blank">Read more</a></p>
+                  <p style="font-size: small; color: gray;">Source: ${article.source}</p>
+                `;
+              }
+            });
+          })
+          .catch(err => console.error("Error fetching news:", err));
+      }
+    </script>
+
   </body>
 </html>

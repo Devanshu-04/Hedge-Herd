@@ -1,4 +1,4 @@
-import requests
+import requests 
 
 
 class newsHandler:  # Class to handle news data
@@ -82,8 +82,8 @@ class app:
         else:
             print("No news for ID:", id)
 
-
-# Remove or comment out the following lines to prevent automatic execution:
+'''
+#Remove or comment out the following lines to prevent automatic execution:
 k = "ct1nmb9r01qoprggpfk0ct1nmb9r01qoprggpfkg"
 apifch = app(k)
 
@@ -96,3 +96,4 @@ apifch.fetch("stocks")
 print("\nFetched News")
 apifch.byId(3)
 apifch.byId(50)
+'''
