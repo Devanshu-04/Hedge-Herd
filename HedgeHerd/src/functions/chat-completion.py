@@ -57,12 +57,23 @@ def chat():
                 break
 
         messages.insert(1, {
-            "role": "system",
-            "content": (
-                "Here is a PDF document content. If asked, extract and compare total assets or other financial numbers "
-                "for 2023 and 2024. Also, extract asset category breakdowns with their ₹ values separately for each year. "
-                "Format values with '₹' and commas, and label as 'Assets for 2023' and 'Assets for 2024'.\n\n" + combined_text)
-        })
+    "role": "system",
+    "content": (
+        "You are analyzing a PDF document. From the content below, perform the following:\n"
+        "1. Extract and list *total assets* for the years 2023 and 2024 in this exact format:\n"
+        "   2024: ₹12,345\n"
+        "   2023: ₹10,987\n\n"
+        "2. Then list detailed breakdowns of assets under these exact headings:\n"
+        "   Assets for 2024:\n"
+        "   Label A: ₹X\n"
+        "   Label B: ₹Y\n\n"
+        "   Assets for 2023:\n"
+        "   Label A: ₹X\n"
+        "   Label B: ₹Y\n\n"
+        "Ensure all currency values use '₹' and commas. Avoid extra text, only the raw formatted numbers and labels.\n\n"
+        + combined_text
+    )
+})
 
     try:
         response = client.chat.completions.create(
