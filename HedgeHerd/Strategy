@@ -1,0 +1,94 @@
+import React, { useState } from 'react';
+import './QuizApp.css';
+
+const QuizApp = () => {
+  const questions = [
+    {
+      question: "What is your risk tolerance?",
+      options: [
+        { text: "High", score: 3 },
+        { text: "Medium", score: 2 },
+        { text: "Low", score: 1 }
+      ]
+    },
+    {
+      question: "What is your investment time horizon?",
+      options: [
+        { text: "More than 5 years", score: 3 },
+        { text: "1-5 years", score: 2 },
+        { text: "Less than 1 year", score: 1 }
+      ]
+    },
+    {
+      question: "What is your primary investment goal?",
+      options: [
+        { text: "Aggressive growth", score: 3 },
+        { text: "Growth and income", score: 2 },
+        { text: "Capital preservation", score: 1 }
+      ]
+    }
+  ];
+
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [totalScore, setTotalScore] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+
+  const handleAnswerSelect = (score) => {
+    setSelectedAnswer(score);
+  };
+
+  const handleNextQuestion = () => {
+    setTotalScore(prev => prev + (selectedAnswer || 0));
+    setSelectedAnswer(null);
+    
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(prev => prev + 1);
+    } else {
+      setShowResult(true);
+    }
+  };
+
+  const getResultMessage = () => {
+    const finalScore = totalScore + (selectedAnswer || 0);
+    if (finalScore <= 3) return "The market is safe to invest in.";
+    if (finalScore <= 6) return "The market should be closely monitored.";
+    return "Investing in the market should be reconsidered.";
+  };
+
+  return (
+    <div className="quiz-container">
+      {!showResult ? (
+        <div className="question-card">
+          <h2>{questions[currentQuestion].question}</h2>
+          <div className="options-container">
+            {questions[currentQuestion].options.map((option, index) => (
+              <button
+                key={index}
+                className={`option-btn ${selectedAnswer === option.score ? 'selected' : ''}`}
+                onClick={() => handleAnswerSelect(option.score)}
+              >
+                {option.text}
+              </button>
+            ))}
+          </div>
+          <button 
+            className="next-btn"
+            onClick={handleNextQuestion}
+            disabled={!selectedAnswer}
+          >
+            {currentQuestion === questions.length - 1 ? 'Finish' : 'Next'}
+          </button>
+        </div>
+      ) : (
+        <div className="result-card">
+          <h2>Investment Recommendation</h2>
+          <p>{getResultMessage()}</p>
+          <p>Total Score: {totalScore + (selectedAnswer || 0)}</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default QuizApp;
