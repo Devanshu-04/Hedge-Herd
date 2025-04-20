@@ -6,8 +6,8 @@
 }
 
 body {
-  font-family: 'Poppins', Arial, Helvetica, sans-serif;
-  background-color: #a0cafa;
+  font-family: 'Montserrat', Arial, Helvetica, sans-serif;
+  background: linear-gradient(135deg, #a0cafa, #7cb9ff);
   color: #222;
 }
 
@@ -29,7 +29,6 @@ body {
   align-items: center;
   width: 100%;
 }
-
 
 .auth-content {
   width: 100%;
@@ -69,7 +68,7 @@ h2 {
   font-size: 1rem;
   border: 1px solid #cbd5e1;
   border-radius: 6px;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Montserrat', sans-serif;
   transition: border-color 0.3s;
 }
 
@@ -114,3 +113,4 @@ h2 {
 .toggle-button:hover {
   color: #3b82f6;
 }
+
