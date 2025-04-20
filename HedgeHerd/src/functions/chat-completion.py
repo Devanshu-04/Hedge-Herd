@@ -37,7 +37,11 @@ def upload_pdf():
         if not pdf_chunks:
             return jsonify({'message': 'PDF has no extractable text'}), 400
 
-        return jsonify({'message': 'PDF successfully uploaded and processed.'}), 200
+        return jsonify({
+            'message': 'PDF successfully uploaded and processed.',
+            'chunks': pdf_chunks  # Include chunks in the response
+        }), 200
+
     except Exception as e:
         print("Upload error:", e)
         return jsonify({'message': 'Error processing PDF.'}), 500
@@ -57,23 +61,23 @@ def chat():
                 break
 
         messages.insert(1, {
-    "role": "system",
-    "content": (
-        "You are analyzing a PDF document. From the content below, perform the following:\n"
-        "1. Extract and list *total assets* for the years 2023 and 2024 in this exact format:\n"
-        "   2024: ₹12,345\n"
-        "   2023: ₹10,987\n\n"
-        "2. Then list detailed breakdowns of assets under these exact headings:\n"
-        "   Assets for 2024:\n"
-        "   Label A: ₹X\n"
-        "   Label B: ₹Y\n\n"
-        "   Assets for 2023:\n"
-        "   Label A: ₹X\n"
-        "   Label B: ₹Y\n\n"
-        "Ensure all currency values use '₹' and commas. Avoid extra text, only the raw formatted numbers and labels.\n\n"
-        + combined_text
-    )
-})
+            "role": "system",
+            "content": (
+                "You are analyzing a PDF document. From the content below, perform the following:\n"
+                "1. Extract and list *total assets* for the years 2023 and 2024 in this exact format:\n"
+                "   2024: ₹12,345\n"
+                "   2023: ₹10,987\n\n"
+                "2. Then list detailed breakdowns of assets under these exact headings:\n"
+                "   Assets for 2024:\n"
+                "   Label A: ₹X\n"
+                "   Label B: ₹Y\n\n"
+                "   Assets for 2023:\n"
+                "   Label A: ₹X\n"
+                "   Label B: ₹Y\n\n"
+                "Ensure all currency values use '₹' and commas. Avoid extra text, only the raw formatted numbers and labels.\n\n"
+                + combined_text
+            )
+        })
 
     try:
         response = client.chat.completions.create(
@@ -86,46 +90,6 @@ def chat():
         print("Chat error:", e)
         return jsonify({'reply': 'There was an error processing your message.'}), 500
 
-
-# ========== ROUTE: PDF Upload and Preview Summary ==========
-@app.route('/upload', methods=['POST'])
-def upload_pdf():
-    global pdf_chunks
-
-    if 'pdf' not in request.files:
-        return jsonify({'message': 'No file uploaded.'}), 400
-
-    file = request.files['pdf']
-    if file.filename == '':
-        return jsonify({'message': 'No file selected.'}), 400
-
-    try:
-        # Save PDF temporarily
-        temp_path = "temp.pdf"
-        file.save(temp_path)
-
-        # Extract and chunk
-        pdf_chunks = []  # Reset previous
-        with fitz.open(temp_path) as doc:
-            for i, page in enumerate(doc):
-                page_text = page.get_text().strip()
-                if page_text:
-                    pdf_chunks.append(f"[Page {i+1}]\n{page_text}")
-
-        if not pdf_chunks:
-            return jsonify({'message': 'PDF has no extractable text.'}), 400
-
-        return jsonify({
-            'message': 'PDF successfully uploaded and processed.',
-            'chunks': pdf_chunks  # Include chunks in the response
-        }), 200
-
-    except Exception as e:
-        print("PDF processing error:", e)
-        return jsonify({'message': 'Error processing PDF.'}), 500
-
-
-
-# ========== Run the server ==========
+# ========== Run the server ==========  
 if __name__ == '__main__':
     app.run(debug=True)
