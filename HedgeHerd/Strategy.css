@@ -1,0 +1,74 @@
+/* QuizApp.css */
+.quiz-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #ffffff 0%, #e3f2fd 100%);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+      }
+      
+      .question-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        max-width: 600px;
+        width: 100%;
+      }
+      
+      h2 {
+        color: #001858; /* Navy blue */
+        margin-bottom: 1.5rem;
+      }
+      
+      .options-container {
+        display: grid;
+        gap: 1rem;
+      }
+      
+      .option-btn {
+        background: #f8f9fa;
+        color: black;
+        border: 2px solid #dee2e6;
+        padding: 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      
+      .option-btn.selected {
+        background: #007bff;
+        color: white;
+        border-color: #007bff;
+      }
+      
+      .next-btn {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 8px;
+        margin-top: 1.5rem;
+        cursor: pointer;
+        float: right;
+      }
+      
+      .next-btn:disabled {
+        background: #6c757d;
+        cursor: not-allowed;
+      }
+      
+      .result-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      
+      .result-card p {
+        font-size: 1.2rem;
+        margin: 1rem 0;
+      }
+      
