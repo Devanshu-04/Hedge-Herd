@@ -1,68 +1,508 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="slider.css">
-    <title>Hedge Herd Home</title>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" href="src/assets/Small.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PDF Analyzer with Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #486e97;
+      color: black;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
 
-  </head>
-  <body>
-    <div class="header">
-      <img src="logo.png" alt="Logo" class="logo">
+    .header {
+      background-color: #486e97;
+      padding: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #f9f9f9;
+      height: 7%;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 10px; /* Space between logo and text */
+    }
+
+    .logo {
+      height: 80px; /* Adjust as needed */
+      width: auto;
+    }
+
+    .profile-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+
+    .profile-btn {
+      background-color: white;
+      color: #333;
+      border: none;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 28px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      transition: background-color 0.2s;
+    }
+
+    .profile-btn:hover {
+      background-color: #e0e0e0;
+    }
+
+    .dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 70px;
+      right: 0;
+      background-color: white;
+      border: 1px solid #ccc;
+      z-index: 999;
+      min-width: 150px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      border-radius: 6px;
+    }
+
+    .dropdown-menu a {
+      display: block;
+      padding: 10px;
+      text-decoration: none;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .content {
+      display: flex; /* change from grid to flex for better control */
+      flex-direction: row;
+      height: 100%;
+      overflow: hidden;
+      margin: 10px; /* space between sections */
+      gap: 20px;
+    }
+
+    .pdf-section {
+      background-color: #84a3c5;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .chat-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 95%;
+      max-height: 100%;
+      background-color: #84a3c5; /* ← Light blue background */
+      padding: 10px;
+      border-radius: 8px;
+      color: #f9f9f9;
+    }
+
+    .pdf-section {
+      flex: 2;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .chat-content {
+      flex-grow: 1;
+      overflow-y: auto;
+      color: #f9f9f9;
+    }
+
+    .chat-input {
+      border: none;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    canvas {
+      margin-top: 10px;
+      background: white;
+      border-radius: 8px;
+    }
+
+    .tab-buttons {
+      display: flex;
+      margin-top: 10px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px;
+      background-color: #6b8eb6;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+
+    .tab-btn:hover, .tab-btn.active {
+      background-color: #3b6fa5;
+    }
+
+
+    .tab-content {
+      flex-grow: 1;
+      overflow-y: auto;
+      min-height: 0; /* important to prevent stretching */
+    }
+
+    #visualization-area {
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    #visualization-area {
+      height: 100%;
+      overflow-y: auto;
+    }
+
+    #pdf-viewer,
+    #viz-tab {
+      height: 100%;
+      width: 100%;
+    }
+
+    .upload-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.upload-left {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+    .tooltip-container {
+      position: relative;
+      display: inline-block;
+    }
+
+  .tooltip-icon {
+    font-size: 22px;
+    background-color: #e8f0ff;
+    color: #007bff;
+    border-radius: 50%;
+    padding: 3px 8px;
+    cursor: pointer;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .tooltip-text {
+    visibility: hidden;
+    background-color: #f9f9f9;
+    color: #333;
+    text-align: left;
+    padding: 10px;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1;
+    top: 35px;
+    right: 0;
+    width: 280px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .tooltip-container:hover .tooltip-text {
+    visibility: visible;
+  }
+
+
+
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo-container">
+      <img src="/src/assets/Small.png" class="logo">
+      <h1>HedgeHerd</h1>
     </div>
-    <div class="content">
-      <div class="news-section">
-        <h2>News</h2>
-        <div class="news-list">
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
-          <div class="news-item"></div>
+    <div class="profile-dropdown">
+      <button class="profile-btn">👤</button>
+      <div class="dropdown-menu">
+        <a href="#" onclick="logout()">Logout</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="pdf-section">
+      <div class="upload-header">
+        <div class="upload-left">
+          <h2 style="color: #f9f9f9">Upload PDF</h2>
+          <input type="file" id="file-input" accept="application/pdf" />
+        </div>
+        <div class="tooltip-container">
+          <span class="tooltip-icon">?</span>
+          <div class="tooltip-text">
+            <strong>Basic Financial Terms:</strong><br><br>
+            <strong>Budgeting:</strong> Creating a plan for how to spend and save money.<br>
+            <strong>Saving:</strong> Setting aside money for future use.<br>
+            <strong>Interest:</strong> The cost of borrowing or earnings from savings.<br>
+            <strong>Credit:</strong> Borrowed money to be repaid, often with interest.<br>
+            <strong>Debt:</strong> Money owed to someone else.<br>
+            <strong>Investment:</strong> Putting money into assets to grow wealth.<br>
+            <strong>Income:</strong> Money earned from work or other sources.<br>
+            <strong>Expenses:</strong> Money spent on needs and wants.<br>
+            <strong>Emergency Fund:</strong> Savings for unexpected costs.<br>
+            <strong>Net Worth:</strong> Assets minus liabilities.
+          </div>
         </div>
       </div>
-      <div class="sidebar">
-        <h2>Quick links</h2>
-        <div class="sidebar-item">Watchlist</div>
-        <div class="sidebar-item">Strategy Builder</div>
-        <div class="sidebar-item">Community Signals</div>
-        <div class="sidebar-item">News Feed</div>
+      <div class="tab-buttons">
+        <button class="tab-btn active" onclick="switchTab('pdf')">PDF Viewer</button>
+        <button class="tab-btn" onclick="switchTab('viz')">Visualizations</button>
+      </div>
+
+      <div id="pdf-tab" class="tab-content">
+        <iframe id="pdf-viewer"></iframe>
+      </div>
+
+      <div id="viz-tab" class="tab-content" style="display: none;">
+        <div id="visualization-area">
+          <canvas id="upload-chart" width="400" height="300"></canvas>
+          <canvas id="pie-chart-2023" width="400" height="300"></canvas>
+          <canvas id="pie-chart-2024" width="400" height="300"></canvas>
+        </div>
       </div>
     </div>
 
-    <script>
-      window.onload = function() {
-        fetch('http://localhost:5000/news').then(res => res.json()).then(data => {
-            const newsItems = document.querySelectorAll('.news-item');
-            data.forEach((article, i) => {
-              if (i < newsItems.length) {
-                newsItems[i].innerHTML = `<div class="news-content">
-                <h3>${article.headline}</h3>
-                </div>
-                <div class="news-footer"> <a href="${article.url}" target="_blank">Read more</a>
-                <span class="news-source">Source: ${article.source}</span></div>`;
-              }
-            });
-          })
-          .catch(err => console.error("Error fetching news:", err));
-      }
-    </script>
+    <div class="chat-section">
+      <h2>Chat Box</h2>
+      <div class="chat-content" id="chat-content"><p>Welcome!</p></div>
+      <input class="chat-input" id="chat-input" placeholder="Ask about the PDF..." />
+    </div>
+  </div>
 
-  </body>
+  
+
+  <script>
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(section => section.style.display = 'none');
+
+      if (tab === 'pdf') {
+        document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+        document.getElementById('pdf-tab').style.display = 'block';
+      } else if (tab === 'viz') {
+        document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+        document.getElementById('viz-tab').style.display = 'block';
+      }
+    }
+
+    function logout() {
+      window.location.href = "auth.html";
+    }
+
+    const fileInput = document.getElementById("file-input");
+    const pdfViewer = document.getElementById("pdf-viewer");
+    const chatInput = document.getElementById("chat-input");
+    const chatContent = document.getElementById("chat-content");
+
+    let uploadChartInstance;
+    const chatHistory = [{ role: "system", content: "You are a helpful assistant." }];
+
+    fileInput.addEventListener("change", async (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const fileURL = URL.createObjectURL(file);
+        pdfViewer.src = fileURL;
+
+        const formData = new FormData();
+        formData.append("pdf", file);
+
+        const res = await fetch("http://localhost:5000/upload", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+        chatContent.innerHTML += `<p><strong>AI:</strong> ${data.message}</p>`;
+
+        const autoMessage = { role: "user", content: "List total assets and breakdown for both 2023 and 2024." };
+        chatHistory.push(autoMessage);
+
+        const chatRes = await fetch("http://localhost:5000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: chatHistory })
+        });
+
+        const chatData = await chatRes.json();
+        const botReply = chatData.reply;
+        chatHistory.push({ role: "assistant", content: botReply });
+
+        chatContent.innerHTML += `<p><strong>AI:</strong><br>${botReply.replace(/\n/g, "<br>")}</p>`;
+
+        switchTab('viz'); // 🟡 Auto switch to visualization tab
+        renderUploadChart(botReply);
+        renderPieCharts(botReply);
+      }
+    });
+
+    chatInput.addEventListener("keypress", async (e) => {
+      if (e.key === "Enter" && chatInput.value.trim() !== "") {
+        const message = chatInput.value.trim();
+        chatContent.innerHTML += `<p><strong>You:</strong> ${message}</p>`;
+        chatInput.value = "";
+
+        chatHistory.push({ role: "user", content: message });
+
+        const res = await fetch("http://localhost:5000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messages: chatHistory })
+        });
+
+        const data = await res.json();
+        const botReply = data.reply;
+        chatHistory.push({ role: "assistant", content: botReply });
+
+        chatContent.innerHTML += `<p><strong>AI:</strong><br>${botReply.replace(/\n/g, "<br>")}</p>`;
+      }
+    });
+
+    function renderUploadChart(replyText) {
+      const canvas = document.getElementById("upload-chart");
+      const ctx = canvas.getContext("2d");
+
+      const match2024 = replyText.match(/2024.*?₹([\d,]+)/);
+      const match2023 = replyText.match(/2023.*?₹([\d,]+)/);
+
+      if (!match2024 || !match2023) return;
+
+      const val2024 = parseInt(match2024[1].replace(/,/g, ''));
+      const val2023 = parseInt(match2023[1].replace(/,/g, ''));
+
+      if (uploadChartInstance) uploadChartInstance.destroy();
+
+      uploadChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Total Assets'],
+          datasets: [
+            {
+              label: '2024 (₹ million)',
+              data: [val2024],
+              backgroundColor: 'rgba(54, 162, 235, 0.6)'
+            },
+            {
+              label: '2023 (₹ million)',
+              data: [val2023],
+              backgroundColor: 'rgba(255, 159, 64, 0.6)'
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: true }
+          },
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+
+    function renderPieCharts(replyText) {
+      const pie2023 = document.getElementById("pie-chart-2023").getContext("2d");
+      const pie2024 = document.getElementById("pie-chart-2024").getContext("2d");
+
+      const parseAssets = (year) => {
+        const sectionRegex = new RegExp(`Assets for ${year}:([\\s\\S]*?)(?=\\n\\n|Assets for|$)`);
+        const match = replyText.match(sectionRegex);
+        if (!match) return [];
+
+        const lines = match[1].split("\n").filter(line => line.includes("₹"));
+        return lines.map(line => {
+          const [label, val] = line.split(":");
+          return {
+            label: label.trim(),
+            value: parseInt(val.replace(/[₹,]/g, ''))
+          };
+        });
+      };
+
+      const data2023 = parseAssets("2023");
+      const data2024 = parseAssets("2024");
+
+      new Chart(pie2023, {
+        type: "pie",
+        data: {
+          labels: data2023.map(d => d.label),
+          datasets: [{
+            data: data2023.map(d => d.value),
+            backgroundColor: ['#FF6384', '#FFCE56', '#36A2EB', '#9CCC65', '#FF9F40']
+          }]
+        }
+      });
+
+      new Chart(pie2024, {
+        type: "pie",
+        data: {
+          labels: data2024.map(d => d.label),
+          datasets: [{
+            data: data2024.map(d => d.value),
+            backgroundColor: ['#42A5F5', '#66BB6A', '#FFA726', '#AB47BC', '#26C6DA']
+          }]
+        }
+      });
+    }
+  </script>
+
+<script>
+  const profileBtn = document.querySelector('.profile-btn');
+  const dropdownMenu = document.querySelector('.dropdown-menu');
+
+  profileBtn.addEventListener('click', () => {
+    dropdownMenu.style.display = dropdownMenu.style.display === 'block' ? 'none' : 'block';
+  });
+
+  // Optional: Hide dropdown when clicking outside
+  document.addEventListener('click', function(event) {
+    const isClickInside = document.querySelector('.profile-dropdown').contains(event.target);
+    if (!isClickInside) {
+      dropdownMenu.style.display = 'none';
+    }
+  });
+</script>
+
+
+</body>
 </html>
+

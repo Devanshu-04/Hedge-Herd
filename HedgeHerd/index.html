@@ -1,18 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <link rel="icon" href="src/assets/Small.png" type="image/png">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>HedgeHerd - Auth</title>
   <link rel="stylesheet" href="HedgeHerd.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="auth-container">
-    <div class="light-header">
-      <img src="src/assets/Small.png" alt="Logo" class="small-logo" />
-    </div>
+
     <div class="auth-content">
-      <img src="src/assets/HedgeHerdOfficial.png" alt="Account" style="display: block; margin: 0 auto; height: 80px;" />
+      <img src="src/assets/HedgeHerdOfficial.png" alt="Account" class="auth-logo" />
       <h2 id="form-title">Log In</h2>
 
       <div class="form-group">
@@ -31,7 +31,7 @@
 
       <div style="text-align: center; margin-top: 15px;" id="toggle-container">
         Don't have an account?
-        <button onclick="toggleAuth()" style="background: none; border: none; color: #1e3a8a; font-weight: bold; cursor: pointer;">
+        <button onclick="toggleAuth()" class="toggle-button">
           Sign Up
         </button>
       </div>
@@ -41,25 +41,19 @@
   <script>
     let isSignUp = false;
 
-    // Simulated in-memory database
-    const dummyDatabase = {
-      "1": "2"
-    };
-
     function toggleAuth() {
       isSignUp = !isSignUp;
-
       document.getElementById("form-title").textContent = isSignUp ? "Sign Up" : "Log In";
       document.getElementById("auth-button").textContent = isSignUp ? "Sign Up" : "Log In";
       document.getElementById("error").textContent = "";
 
       const toggleHTML = isSignUp
         ? `Already have an account?
-            <button onclick="toggleAuth()" style="background: none; border: none; color: #1e3a8a; font-weight: bold; cursor: pointer;">
+            <button onclick="toggleAuth()" class="toggle-button">
               Log In
             </button>`
         : `Don't have an account?
-            <button onclick="toggleAuth()" style="background: none; border: none; color: #1e3a8a; font-weight: bold; cursor: pointer;">
+            <button onclick="toggleAuth()" class="toggle-button">
               Sign Up
             </button>`;
 
@@ -71,6 +65,9 @@
       const password = document.getElementById("password").value.trim();
       const errorElem = document.getElementById("error");
       errorElem.textContent = "";
+      errorElem.style.color = "#ef4444"; // red by default
+
+      let dummyDatabase = JSON.parse(localStorage.getItem("hedgeherdDB")) || {};
 
       if (!email || !password) {
         errorElem.textContent = "Please enter both email and password.";
@@ -82,14 +79,15 @@
           errorElem.textContent = "Email already registered.";
         } else {
           dummyDatabase[email] = password;
-          //alert("Signed up successfully! Redirecting to dashboard...");
-          //Simulate navigation: window.location.href = "/dashboard";
-          window.location.href = "mainpage.html";
+          localStorage.setItem("hedgeherdDB", JSON.stringify(dummyDatabase)); // Save to localStorage
+
+          isSignUp = false;
+          toggleAuth(); // Switch to login form
+          errorElem.style.color = "#16a34a"; // green for success
+          errorElem.textContent = "Account created! Please log in.";
         }
       } else {
         if (dummyDatabase[email] === password) {
-          //alert("Logged in successfully! Redirecting to dashboard...");
-          // Simulate navigation: window.location.href = "/dashboard";
           window.location.href = "mainpage.html";
         } else {
           errorElem.textContent = "Invalid email or password.";
